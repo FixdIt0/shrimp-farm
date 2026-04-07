@@ -4,425 +4,275 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>$SHRIMP — The Farm</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#0a0a0a;--g:#00ff88;--gd:#00cc6a;--dim:#00ff8833;--red:#ff4444;--amber:#ffaa00;--t:#00ff88;--td:#007744;--mono:'Courier New',monospace}
-body{background:var(--bg);color:var(--g);font-family:var(--mono);overflow:hidden;height:100dvh;display:flex;flex-direction:column}
+:root{--bg:#f0ebe3;--card:#fff;--border:#e0d8cc;--accent:#ff6b4a;--accent2:#4a9eff;--green:#2ecc71;--text:#1a1a1a;--dim:#888;--mono:'JetBrains Mono',monospace;--sans:'DM Sans',sans-serif;--water:#1a3a4a;--sand:#c4a96a;--pond:#1e4d5e}
+body{background:var(--bg);font-family:var(--sans);color:var(--text);overflow-x:hidden}
 
-/* SCANLINE */
-body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:100;
-  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,136,.015) 2px,rgba(0,255,136,.015) 4px);
-}
+/* NAV */
+nav{display:flex;justify-content:space-between;align-items:center;padding:12px 24px;background:#fff;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50}
+.nav-brand{font-weight:700;font-size:18px;display:flex;align-items:center;gap:8px}
+.nav-brand span{color:var(--accent)}
+.nav-links{display:flex;gap:16px;align-items:center}
+.nav-links a{color:var(--dim);text-decoration:none;font-size:13px;font-weight:500;transition:color .2s}
+.nav-links a:hover,.nav-links a.active{color:var(--text)}
+.nav-pill{background:var(--accent);color:#fff;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600}
 
-/* TOP BAR */
-.top{display:flex;justify-content:space-between;align-items:center;padding:8px 16px;border-bottom:1px solid #1a1a1a;font-size:11px;flex-shrink:0}
-.top-left{display:flex;gap:16px;align-items:center}
-.top-left span{color:var(--td)}
-.top-left .brand{color:var(--g);font-weight:bold;font-size:13px}
-.top-right{display:flex;gap:12px;align-items:center}
-.top-right a{color:var(--td);text-decoration:none;font-size:10px;letter-spacing:1px;text-transform:uppercase}
-.top-right a:hover{color:var(--g)}
-.top-right .active{color:var(--g)}
+/* FARM VIEW */
+.farm-wrap{position:relative;width:100%;height:calc(100dvh - 49px);overflow:hidden;background:linear-gradient(180deg,#87CEEB 0%,#a8d8ea 30%,#c4e0c4 50%,#8fbc8f 60%,var(--sand) 70%,var(--sand) 100%)}
 
-/* SOUND TOGGLE */
-.sound-btn{background:none;border:1px solid #1a1a1a;color:var(--td);font-family:var(--mono);font-size:10px;padding:2px 8px;cursor:pointer;letter-spacing:1px;transition:color .2s,border-color .2s}
-.sound-btn:hover{color:var(--g);border-color:var(--g)}
-.sound-btn.unmuted{color:var(--g);border-color:var(--td)}
+/* WATER */
+.pond{position:absolute;border-radius:50%;background:radial-gradient(ellipse at 40% 40%,#2a7a9a,var(--pond));box-shadow:inset 0 4px 20px rgba(0,0,0,.2),0 2px 8px rgba(0,0,0,.1);overflow:hidden}
+.pond::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.15) 0%,transparent 50%);border-radius:50%}
+.pond-1{width:320px;height:220px;left:10%;top:35%}
+.pond-2{width:260px;height:180px;right:15%;top:40%}
+.pond-3{width:200px;height:140px;left:40%;top:55%}
 
-/* HUD */
-.hud{display:flex;gap:1px;background:#111;border-bottom:1px solid #1a1a1a;flex-shrink:0}
-.hud-cell{flex:1;padding:12px 16px;background:var(--bg);transition:transform .2s,border-color .2s;border-bottom:2px solid transparent;will-change:transform}
-.hud-cell:hover{transform:translateY(-2px);border-bottom-color:var(--g);box-shadow:0 4px 12px rgba(0,255,136,.08)}
-.hud-val{font-size:20px;font-weight:bold;color:var(--g);font-variant-numeric:tabular-nums;transition:color .15s,text-shadow .15s}
-.hud-lbl{font-size:9px;color:var(--td);letter-spacing:2px;text-transform:uppercase;margin-top:2px}
-.hud-val.red{color:var(--red)}
-.hud-val.amber{color:var(--amber)}
-.hud-val.flash{color:#fff;text-shadow:0 0 12px var(--g)}
+/* RIPPLES */
+.ripple{position:absolute;border-radius:50%;border:1px solid rgba(255,255,255,.15);animation:ripple 3s ease-out infinite}
+@keyframes ripple{0%{width:0;height:0;opacity:.4}100%{width:60px;height:40px;opacity:0;margin-left:-30px;margin-top:-20px}}
 
-/* BOOT ANIMATION — HUD cells */
-.hud-cell{opacity:0;transform:scale(.92);animation:hudIn .5s cubic-bezier(.16,1,.3,1) forwards}
-.hud-cell:nth-child(1){animation-delay:.6s}
-.hud-cell:nth-child(2){animation-delay:.72s}
-.hud-cell:nth-child(3){animation-delay:.84s}
-.hud-cell:nth-child(4){animation-delay:.96s}
-.hud-cell:nth-child(5){animation-delay:1.08s}
-@keyframes hudIn{to{opacity:1;transform:scale(1)}}
+/* GROUND DETAILS */
+.grass{position:absolute;width:8px;height:16px;background:linear-gradient(to top,#6a9a4a,#8fbc6f);border-radius:50% 50% 0 0;transform-origin:bottom}
+.rock{position:absolute;background:radial-gradient(ellipse at 40% 30%,#a09080,#706050);border-radius:40% 50% 45% 55%}
+.flower{position:absolute;width:8px;height:8px;border-radius:50%;box-shadow:0 0 0 3px rgba(255,255,255,.3)}
 
-/* MAIN AREA */
-.main{display:flex;flex:1;overflow:hidden;position:relative}
+/* STATIONS */
+.station{position:absolute;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;transition:transform .2s}
+.station:hover{transform:scale(1.05)}
+.station-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.station-label{font-size:10px;font-weight:600;color:#fff;background:rgba(0,0,0,.5);padding:2px 8px;border-radius:8px;white-space:nowrap;backdrop-filter:blur(4px)}
 
-/* AMBIENT GLOW */
-.ambient-glow{position:absolute;inset:0;pointer-events:none;z-index:0;
-  background:radial-gradient(ellipse at 50% 50%,rgba(0,255,136,.03) 0%,transparent 60%);
-  animation:ambientPulse 6s ease-in-out infinite;
-}
-@keyframes ambientPulse{0%,100%{opacity:.5}50%{opacity:1}}
+/* SHRIMP */
+.shrimp{position:absolute;transition:left 2s ease-in-out,top 2s ease-in-out;z-index:10;cursor:pointer}
+.shrimp:hover .shrimp-body{transform:scale(1.2)}
+.shrimp-body{width:28px;height:18px;border-radius:14px 14px 8px 8px;position:relative;transition:transform .2s;animation:bob 1.5s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+.shrimp-eye{position:absolute;width:5px;height:5px;background:#fff;border-radius:50%;top:3px;right:5px;box-shadow:inset 1.5px 0 0 #111}
+.shrimp-tail{position:absolute;left:-6px;top:6px;width:10px;height:6px;border-radius:0 0 6px 6px;opacity:.7}
+.shrimp-antenna{position:absolute;right:2px;top:-4px;width:1px;height:8px;transform:rotate(20deg);transform-origin:bottom}
+.shrimp-antenna2{position:absolute;right:6px;top:-3px;width:1px;height:6px;transform:rotate(-15deg);transform-origin:bottom}
 
-/* AGENT PANEL */
-.agents{width:240px;border-right:1px solid #1a1a1a;overflow-y:auto;flex-shrink:0;z-index:1}
-.agents-title{padding:10px 16px;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--td);border-bottom:1px solid #1a1a1a}
-.agent{padding:10px 16px;border-bottom:1px solid #111;cursor:pointer;transition:background .15s,box-shadow .2s;will-change:transform;
-  opacity:0;transform:translateX(-20px);animation:agentSlideIn .4s cubic-bezier(.16,1,.3,1) forwards}
-.agent:nth-child(2){animation-delay:1.2s}
-.agent:nth-child(3){animation-delay:1.32s}
-.agent:nth-child(4){animation-delay:1.44s}
-.agent:nth-child(5){animation-delay:1.56s}
-.agent:nth-child(6){animation-delay:1.68s}
-@keyframes agentSlideIn{to{opacity:1;transform:translateX(0)}}
-.agent:hover{background:#111;box-shadow:0 0 12px rgba(0,255,136,.08) inset,0 0 8px rgba(0,255,136,.05)}
-.agent.selected{background:#0a1a10;border-left:2px solid var(--g)}
-.agent-name{font-size:12px;color:var(--g);margin-bottom:2px}
-.agent-role{font-size:10px;color:var(--td)}
-.agent-status{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:9px}
-.dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.dot.active{background:var(--g);box-shadow:0 0 6px var(--g);animation:blink 2s ease-in-out infinite}
-.dot.idle{background:#333}
-.agent.selected .dot.active{animation:blinkFast 1s ease-in-out infinite}
+/* SPEECH BUBBLE */
+.bubble{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:#fff;color:var(--text);font-size:10px;font-family:var(--sans);padding:4px 10px;border-radius:10px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.1);opacity:0;transition:opacity .3s;pointer-events:none;font-weight:500;margin-bottom:6px}
+.bubble::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:4px solid transparent;border-top-color:#fff}
+.shrimp.talking .bubble{opacity:1}
+
+/* NAME TAG */
+.shrimp-tag{position:absolute;top:100%;left:50%;transform:translateX(-50%);font-size:8px;font-family:var(--mono);font-weight:600;white-space:nowrap;margin-top:4px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+
+/* INFO PANEL */
+.info{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);padding:16px 24px;display:flex;gap:24px;align-items:center;z-index:40;transform:translateY(100%);transition:transform .3s ease;box-shadow:0 -4px 20px rgba(0,0,0,.08)}
+.info.open{transform:translateY(0)}
+.info-close{position:absolute;top:12px;right:16px;background:none;border:none;font-size:18px;cursor:pointer;color:var(--dim)}
+.info-avatar{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+.info-text h3{font-size:15px;margin-bottom:2px}
+.info-text p{font-size:12px;color:var(--dim)}
+.info-log{flex:1;font-family:var(--mono);font-size:11px;color:var(--dim);max-height:60px;overflow-y:auto;background:#f8f6f2;padding:8px 12px;border-radius:8px;line-height:1.6}
+.info-log .active-line{color:var(--green);font-weight:500}
+
+/* HUD OVERLAY */
+.hud-overlay{position:absolute;top:12px;left:12px;display:flex;gap:8px;z-index:20}
+.hud-chip{background:rgba(255,255,255,.85);backdrop-filter:blur(8px);padding:6px 14px;border-radius:20px;font-size:11px;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.08);display:flex;align-items:center;gap:6px}
+.hud-chip .dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 1.5s ease-in-out infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-@keyframes blinkFast{0%,100%{opacity:1}50%{opacity:.2}}
-.agent-status span{color:var(--td)}
 
-/* TERMINAL */
-.terminal{flex:1;display:flex;flex-direction:column;overflow:hidden;z-index:1}
-.term-header{padding:8px 16px;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--td);border-bottom:1px solid #1a1a1a;display:flex;justify-content:space-between}
-.term-body{flex:1;overflow-y:auto;padding:12px 16px;font-size:12px;line-height:1.8}
-.term-body::-webkit-scrollbar{width:4px}
-.term-body::-webkit-scrollbar-thumb{background:#1a1a1a}
-.log-line{opacity:0;animation:fadeIn .3s forwards;will-change:opacity}
-@keyframes fadeIn{to{opacity:1}}
-.log-time{color:#333}
-.log-agent{color:var(--amber);font-weight:bold;text-shadow:0 0 8px rgba(255,170,0,.4)}
-.log-action{color:var(--g)}
-.log-data{color:var(--td)}
-.log-error{color:var(--red)}
-.log-success{color:var(--g);font-weight:bold;text-shadow:0 0 8px rgba(0,255,136,.5)}
-.log-line.filtered-out{display:none}
+/* CLOUDS */
+.cloud{position:absolute;background:#fff;border-radius:50px;opacity:.6;animation:drift linear infinite}
+@keyframes drift{0%{transform:translateX(-200px)}100%{transform:translateX(calc(100vw + 200px))}}
 
-/* TERMINAL CURSOR */
-.term-cursor{display:block;margin-top:4px;height:16px}
-.term-cursor-block{display:inline-block;width:8px;height:14px;background:var(--g);animation:cursorBlink .8s step-end infinite;vertical-align:middle;box-shadow:0 0 6px rgba(0,255,136,.5)}
-@keyframes cursorBlink{0%,100%{opacity:1}50%{opacity:0}}
-
-/* BOOT SEQUENCE STAGGER */
-.boot-line{opacity:0;animation:bootFade .4s ease forwards}
-@keyframes bootFade{to{opacity:1}}
-
-/* BOTTOM BAR */
-.bottom{display:flex;justify-content:space-between;align-items:center;padding:6px 16px;border-top:1px solid #1a1a1a;font-size:10px;color:var(--td);flex-shrink:0}
-.bottom a{color:var(--g);text-decoration:none}
-.bottom a:hover{text-decoration:underline}
-
-/* MOBILE */
 @media(max-width:768px){
-  .agents{display:none}
-  .hud{flex-wrap:wrap}
-  .hud-cell{flex:1 1 48%;min-width:0}
-  .hud-cell:last-child{flex:1 1 100%}
-  .hud-val{font-size:16px}
-  .hud-cell{padding:8px 10px}
-}
-
-/* REDUCED MOTION */
-@media(prefers-reduced-motion:reduce){
-  *,*::before,*::after{animation-duration:0.01ms!important;transition-duration:0.01ms!important}
+  .pond-1{width:200px;height:140px;left:5%;top:40%}
+  .pond-2{width:160px;height:110px;right:5%;top:45%}
+  .pond-3{display:none}
+  .hud-overlay{flex-wrap:wrap}
+  .info{flex-direction:column;align-items:flex-start}
 }
 </style>
 </head>
 <body>
 
-<!-- TOP -->
-<div class="top">
-  <div class="top-left">
-    <span class="brand">🦐 $SHRIMP</span>
-    <span>THE FARM</span>
-  </div>
-  <div class="top-right">
-    <button class="sound-btn" id="soundToggle" title="Toggle sound">♪ MUTE</button>
-    <a href="index.html" class="active">FARM</a>
-    <a href="feed.html">FEED</a>
-    <a href="#">JUPITER</a>
-    <a href="#">PUMP.FUN</a>
+<nav>
+  <div class="nav-brand">🦐 <span>$SHRIMP</span></div>
+  <div class="nav-links">
+    <a href="index.html" class="active">Farm</a>
+    <a href="feed.html">Feed</a>
+    <a href="#">Jupiter</a>
+    <a href="#">Pump.fun</a>
     <a href="#">X</a>
+    <a href="#" class="nav-pill">Buy $SHRIMP</a>
   </div>
-</div>
+</nav>
 
-<!-- HUD -->
-<div class="hud">
-  <div class="hud-cell"><div class="hud-val">5</div><div class="hud-lbl">Active Shrimp</div></div>
-  <div class="hud-cell"><div class="hud-val" id="taskCount">0</div><div class="hud-lbl">Tasks Today</div></div>
-  <div class="hud-cell"><div class="hud-val amber" id="credits">12,847</div><div class="hud-lbl">API Credits</div></div>
-  <div class="hud-cell"><div class="hud-val" id="uptime">00:00:00</div><div class="hud-lbl">Farm Uptime</div></div>
-  <div class="hud-cell"><div class="hud-val">$SHRIMP</div><div class="hud-lbl">Token</div></div>
-</div>
+<div class="farm-wrap" id="farm">
+  <!-- CLOUDS -->
+  <div class="cloud" style="width:120px;height:40px;top:5%;animation-duration:45s"></div>
+  <div class="cloud" style="width:80px;height:28px;top:12%;animation-duration:60s;animation-delay:-20s;opacity:.4"></div>
+  <div class="cloud" style="width:100px;height:35px;top:8%;animation-duration:55s;animation-delay:-35s;opacity:.5"></div>
 
-<!-- MAIN -->
-<div class="main">
-  <div class="ambient-glow"></div>
-  <!-- AGENT LIST -->
-  <div class="agents">
-    <div class="agents-title">Shrimp Fleet</div>
-    <div class="agent selected" data-id="0">
-      <div class="agent-name">SHRIMP-01</div>
-      <div class="agent-role">Tweet Scout</div>
-      <div class="agent-status"><div class="dot active"></div><span>scanning</span></div>
-    </div>
-    <div class="agent" data-id="1">
-      <div class="agent-name">SHRIMP-02</div>
-      <div class="agent-role">Meme Generator</div>
-      <div class="agent-status"><div class="dot active"></div><span>creating</span></div>
-    </div>
-    <div class="agent" data-id="2">
-      <div class="agent-name">SHRIMP-03</div>
-      <div class="agent-role">Trend Analyst</div>
-      <div class="agent-status"><div class="dot active"></div><span>analyzing</span></div>
-    </div>
-    <div class="agent" data-id="3">
-      <div class="agent-name">SHRIMP-04</div>
-      <div class="agent-role">Thread Writer</div>
-      <div class="agent-status"><div class="dot active"></div><span>composing</span></div>
-    </div>
-    <div class="agent" data-id="4">
-      <div class="agent-name">SHRIMP-05</div>
-      <div class="agent-role">Wallet Roaster</div>
-      <div class="agent-status"><div class="dot active"></div><span>roasting</span></div>
-    </div>
+  <!-- HUD -->
+  <div class="hud-overlay">
+    <div class="hud-chip"><div class="dot"></div> 5 Shrimp Active</div>
+    <div class="hud-chip">📋 <span id="taskCount">0</span> Tasks</div>
+    <div class="hud-chip">⚡ 12,847 Credits</div>
   </div>
 
-  <!-- TERMINAL -->
-  <div class="terminal">
-    <div class="term-header">
-      <span id="termTitle">Live Activity Feed — All Shrimp</span>
-      <span id="lineCount">0 lines</span>
-    </div>
-    <div class="term-body" id="term">
-      <div class="term-cursor"><span class="term-cursor-block"></span></div>
-    </div>
-  </div>
+  <!-- PONDS -->
+  <div class="pond pond-1" id="pond1"></div>
+  <div class="pond pond-2" id="pond2"></div>
+  <div class="pond pond-3" id="pond3"></div>
+
+  <!-- STATIONS -->
+  <div class="station" style="left:8%;top:22%"><div class="station-icon" style="background:#4a9eff">🔍</div><div class="station-label">Tweet Scanner</div></div>
+  <div class="station" style="right:10%;top:20%"><div class="station-icon" style="background:#ff6b4a">🎨</div><div class="station-label">Meme Lab</div></div>
+  <div class="station" style="left:45%;top:18%"><div class="station-icon" style="background:#9b59b6">📊</div><div class="station-label">Trend HQ</div></div>
+  <div class="station" style="left:25%;top:70%"><div class="station-icon" style="background:#2ecc71">🧵</div><div class="station-label">Thread Desk</div></div>
+  <div class="station" style="right:20%;top:72%"><div class="station-icon" style="background:#e74c3c">🔥</div><div class="station-label">Roast Pit</div></div>
 </div>
 
-<!-- BOTTOM -->
-<div class="bottom">
-  <span>CA: TBA &nbsp;|&nbsp; <a href="feed.html">View Agent Output →</a></span>
-  <span>Powered by OpenClaw &nbsp;|&nbsp; All agents open source</span>
+<!-- INFO PANEL -->
+<div class="info" id="infoPanel">
+  <button class="info-close" onclick="document.getElementById('infoPanel').classList.remove('open')">&times;</button>
+  <div class="info-avatar" id="infoAvatar">🦐</div>
+  <div class="info-text"><h3 id="infoName">—</h3><p id="infoRole">—</p></div>
+  <div class="info-log" id="infoLog"></div>
 </div>
 
 <script>
-const agents=[
-  {name:'SHRIMP-01',role:'Tweet Scout',actions:[
-    'scanning crypto twitter for trending topics...',
-    'found 23 new mentions of $SOL in last 5 min',
-    'analyzing sentiment: 78% bullish, 22% bearish',
-    'detected trending topic: "Solana TPS hits new ATH"',
-    'flagging @whale_alert transfer: 500K SOL moved',
-    'scanning #memecoin hashtag... 847 tweets in last hour',
-    'identified potential alpha: $BONK volume spike +340%',
-    'compiling hourly trend report...',
-    'report generated: 12 trending tokens, 3 narratives',
-    'pushing report to feed...',
-  ]},
-  {name:'SHRIMP-02',role:'Meme Generator',actions:[
-    'loading trending templates from meme database...',
-    'selected template: "distracted boyfriend" variant',
-    'generating caption using GPT-4o...',
-    'caption: "me / my portfolio / literally any new memecoin"',
-    'rendering image at 1080x1080...',
-    'applying $SHRIMP watermark...',
-    'meme complete. quality score: 8.4/10',
-    'posting to X via API...',
-    'posted successfully. tweet ID: 1847293847',
-    'monitoring engagement... 12 likes in first 30 sec',
-  ]},
-  {name:'SHRIMP-03',role:'Trend Analyst',actions:[
-    'pulling DexScreener data for top 50 pairs...',
-    'analyzing volume patterns across Solana DEXs...',
-    'detected unusual activity on Raydium pool 0x7f3...',
-    'cross-referencing with Birdeye token metrics...',
-    'running momentum algorithm on 15-min candles...',
-    'signal detected: 3 tokens showing accumulation pattern',
-    'checking deployer wallets for rug indicators...',
-    'deployer clean on 2/3 tokens. flagging 1 suspicious.',
-    'generating alpha report with confidence scores...',
-    'report ready: 2 tokens flagged as potential runners',
-  ]},
-  {name:'SHRIMP-04',role:'Thread Writer',actions:[
-    'received topic from SHRIMP-03: "Solana DeFi TVL analysis"',
-    'researching data points from DefiLlama API...',
-    'TVL data pulled: $8.2B total, +12% this week',
-    'drafting thread outline: 7 tweets, data-heavy',
-    'writing tweet 1/7: hook with key stat...',
-    'writing tweet 2/7: historical context...',
-    'writing tweet 3/7: protocol breakdown...',
-    'writing tweet 4-7: analysis + conclusion...',
-    'thread complete. running quality check...',
-    'posting thread to X... first tweet live',
-  ]},
-  {name:'SHRIMP-05',role:'Wallet Roaster',actions:[
-    'received wallet submission: 7xKp...F3mQ',
-    'pulling transaction history via Helius API...',
-    'found 2,847 transactions in last 90 days...',
-    'analyzing: 94% are meme coin swaps under $50',
-    'average hold time: 7 minutes. certified paper hands.',
-    'biggest win: +$420 on $BONK. biggest loss: -$2,100 on $RUGPULL',
-    'generating roast card...',
-    'roast: "your wallet has the energy of someone who panic sells at -5% then watches it 10x"',
-    'roast card rendered. posting to feed...',
-    'waiting for next wallet submission...',
-  ]},
+const shrimps=[
+  {name:'SHRIMP-01',role:'Tweet Scout',color:'#ff6b4a',station:0,actions:['scanning crypto twitter...','found 23 trending mentions','analyzing sentiment: 78% bullish','flagging whale transfer: 500K SOL','compiling hourly report...','report pushed to feed ✓']},
+  {name:'SHRIMP-02',role:'Meme Generator',color:'#4a9eff',station:1,actions:['loading meme templates...','selected: distracted boyfriend','generating caption with GPT-4o...','rendering image 1080x1080...','applying $SHRIMP watermark...','meme posted to X ✓']},
+  {name:'SHRIMP-03',role:'Trend Analyst',color:'#9b59b6',station:2,actions:['pulling DexScreener data...','analyzing volume patterns...','detected unusual accumulation','cross-referencing deployers...','running momentum algorithm...','alpha report generated ✓']},
+  {name:'SHRIMP-04',role:'Thread Writer',color:'#2ecc71',station:3,actions:['received topic from SHRIMP-03','researching via DefiLlama API...','drafting 7-tweet thread...','writing hook with key stat...','quality check passed','thread posted to X ✓']},
+  {name:'SHRIMP-05',role:'Wallet Roaster',color:'#e74c3c',station:4,actions:['received wallet: 7xKp...F3mQ','pulling 2,847 transactions...','analyzing: 94% meme swaps','avg hold time: 7 minutes','generating roast card...','roast posted to feed ✓']},
 ];
 
-const term=document.getElementById('term');
-const cursorEl=term.querySelector('.term-cursor');
+const stationPositions=[
+  {x:12,y:28},{x:78,y:26},{x:48,y:24},{x:28,y:74},{x:72,y:76}
+];
+const pondPositions=[
+  {x:18,y:42},{x:72,y:48},{x:45,y:60}
+];
+
 let taskCount=0;
-let lineCount=0;
-let startTime=Date.now();
-let activeFilter=null; // null = all agents
+const farm=document.getElementById('farm');
 
-// --- SOUND SYSTEM (Web Audio API) ---
-let audioCtx=null;
-let soundEnabled=false;
-const soundBtn=document.getElementById('soundToggle');
-
-soundBtn.addEventListener('click',()=>{
-  soundEnabled=!soundEnabled;
-  if(soundEnabled&&!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-  soundBtn.textContent=soundEnabled?'♪ ON':'♪ MUTE';
-  soundBtn.classList.toggle('unmuted',soundEnabled);
+// Create shrimp elements
+const shrimpEls=shrimps.map((s,i)=>{
+  const el=document.createElement('div');
+  el.className='shrimp';
+  const startPond=pondPositions[i%3];
+  el.style.left=startPond.x+'%';
+  el.style.top=startPond.y+'%';
+  el.innerHTML=`
+    <div class="bubble" id="bubble-${i}"></div>
+    <div class="shrimp-body" style="background:${s.color}">
+      <div class="shrimp-eye"></div>
+      <div class="shrimp-tail" style="background:${s.color}"></div>
+      <div class="shrimp-antenna" style="background:${s.color}"></div>
+      <div class="shrimp-antenna2" style="background:${s.color}"></div>
+    </div>
+    <div class="shrimp-tag">${s.name}</div>
+  `;
+  el.onclick=()=>showInfo(i);
+  farm.appendChild(el);
+  return el;
 });
 
-function playTick(){
-  if(!soundEnabled||!audioCtx)return;
-  const o=audioCtx.createOscillator();
-  const g=audioCtx.createGain();
-  o.type='sine';
-  o.frequency.value=1200;
-  g.gain.value=0.04;
-  g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.06);
-  o.connect(g).connect(audioCtx.destination);
-  o.start();
-  o.stop(audioCtx.currentTime+0.06);
-}
-
-// --- AGENT FILTERING ---
-document.querySelectorAll('.agent').forEach(el=>{
-  el.addEventListener('click',()=>{
-    const name=agents[parseInt(el.dataset.id)].name;
-    const wasSelected=el.classList.contains('selected')&&activeFilter===name;
-    document.querySelectorAll('.agent').forEach(a=>a.classList.remove('selected'));
-    if(wasSelected){
-      activeFilter=null;
-      document.getElementById('termTitle').textContent='Live Activity Feed — All Shrimp';
-    }else{
-      el.classList.add('selected');
-      activeFilter=name;
-      document.getElementById('termTitle').textContent='Live Activity Feed — '+name;
-    }
-    applyFilter();
-  });
+// Add ripples to ponds
+document.querySelectorAll('.pond').forEach(pond=>{
+  setInterval(()=>{
+    const r=document.createElement('div');
+    r.className='ripple';
+    r.style.left=Math.random()*60+20+'%';
+    r.style.top=Math.random()*60+20+'%';
+    pond.appendChild(r);
+    setTimeout(()=>r.remove(),3000);
+  },2000+Math.random()*3000);
 });
 
-function applyFilter(){
-  term.querySelectorAll('.log-line').forEach(line=>{
-    if(!activeFilter){line.classList.remove('filtered-out');return}
-    const agentSpan=line.querySelector('.log-agent');
-    const match=agentSpan&&agentSpan.textContent.includes(activeFilter);
-    line.classList.toggle('filtered-out',!match);
-  });
+// Add ground details
+for(let i=0;i<30;i++){
+  const g=document.createElement('div');
+  g.className='grass';
+  g.style.left=Math.random()*100+'%';
+  g.style.top=65+Math.random()*30+'%';
+  g.style.transform=`rotate(${Math.random()*20-10}deg)`;
+  g.style.opacity=0.4+Math.random()*0.4;
+  farm.appendChild(g);
+}
+for(let i=0;i<8;i++){
+  const r=document.createElement('div');
+  r.className='rock';
+  r.style.width=8+Math.random()*16+'px';
+  r.style.height=6+Math.random()*10+'px';
+  r.style.left=Math.random()*90+5+'%';
+  r.style.top=62+Math.random()*32+'%';
+  farm.appendChild(r);
 }
 
-// --- TASK COUNT FLASH ---
-function flashTaskCount(){
-  const el=document.getElementById('taskCount');
-  el.classList.add('flash');
-  setTimeout(()=>el.classList.remove('flash'),300);
-}
+// Agent activity loop
+const agentState=shrimps.map(()=>({actionIdx:0,phase:'pond',log:[]}));
 
-function timestamp(){
-  const d=new Date();
-  return d.toTimeString().slice(0,8);
-}
+function moveShrimp(i){
+  const s=shrimps[i];
+  const el=shrimpEls[i];
+  const state=agentState[i];
+  const action=s.actions[state.actionIdx%s.actions.length];
+  const isLast=(state.actionIdx%s.actions.length)===s.actions.length-1;
 
-function addLine(agent,text,type='action',isBoot=false){
-  const div=document.createElement('div');
-  div.className=isBoot?'log-line boot-line':'log-line';
-  div.dataset.agent=agent;
-  const cls=type==='error'?'log-error':type==='success'?'log-success':'log-action';
-  div.innerHTML=`<span class="log-time">${timestamp()}</span> <span class="log-agent">[${agent}]</span> <span class="${cls}">${text}</span>`;
-  if(activeFilter&&!agent.includes(activeFilter))div.classList.add('filtered-out');
-  term.insertBefore(div,cursorEl);
-  lineCount++;
-  document.getElementById('lineCount').textContent=lineCount+' lines';
-  term.scrollTop=term.scrollHeight;
-  // limit to 200 lines
-  const lines=term.querySelectorAll('.log-line');
-  if(lines.length>200)lines[0].remove();
-  playTick();
-}
+  if(state.phase==='pond'){
+    // Move to station
+    const st=stationPositions[s.station];
+    el.style.left=st.x+'%';
+    el.style.top=st.y+'%';
+    state.phase='working';
+  }else{
+    // Move back to pond
+    const p=pondPositions[i%3];
+    el.style.left=(p.x+Math.random()*10-5)+'%';
+    el.style.top=(p.y+Math.random()*6-3)+'%';
+    state.phase='pond';
+  }
 
-// simulate agent activity
-const agentState=agents.map(()=>({idx:0}));
+  // Show bubble
+  const bubble=document.getElementById('bubble-'+i);
+  bubble.textContent=action;
+  el.classList.add('talking');
+  setTimeout(()=>el.classList.remove('talking'),2500);
 
-function tick(){
-  const i=Math.floor(Math.random()*agents.length);
-  const a=agents[i];
-  const s=agentState[i];
-  const text=a.actions[s.idx%a.actions.length];
-  const isLast=(s.idx%a.actions.length)===a.actions.length-1;
-  addLine(a.name,text,isLast?'success':'action');
+  state.log.push(action);
+  if(state.log.length>10)state.log.shift();
+
   if(isLast){
     taskCount++;
     document.getElementById('taskCount').textContent=taskCount;
-    flashTaskCount();
-    const el=document.getElementById('credits');
-    const c=parseInt(el.textContent.replace(/,/g,''))-Math.floor(Math.random()*50+10);
-    el.textContent=c.toLocaleString();
   }
-  s.idx++;
+  state.actionIdx++;
 }
 
-// stagger initial burst
-for(let i=0;i<8;i++)setTimeout(()=>tick(),3200+i*400);
+// Stagger agent loops
+shrimps.forEach((_,i)=>{
+  const interval=4000+i*800;
+  setTimeout(()=>{
+    moveShrimp(i);
+    setInterval(()=>moveShrimp(i),interval);
+  },1000+i*600);
+});
 
-// then continuous
-setInterval(tick,2000+Math.random()*2000);
-
-// uptime counter
-setInterval(()=>{
-  const s=Math.floor((Date.now()-startTime)/1000);
-  const h=String(Math.floor(s/3600)).padStart(2,'0');
-  const m=String(Math.floor((s%3600)/60)).padStart(2,'0');
-  const sec=String(s%60).padStart(2,'0');
-  document.getElementById('uptime').textContent=`${h}:${m}:${sec}`;
-},1000);
-
-// boot sequence with staggered delays
-(function boot(){
-  const msgs=[
-    ['SYSTEM','initializing shrimp farm v0.1.0...','action'],
-    ['SYSTEM','connecting to OpenClaw runtime...','action'],
-    ['SYSTEM','loading 5 agent skill files...','action'],
-    ['SYSTEM','SHRIMP-01 (Tweet Scout) ............ ONLINE','success'],
-    ['SYSTEM','SHRIMP-02 (Meme Generator) ......... ONLINE','success'],
-    ['SYSTEM','SHRIMP-03 (Trend Analyst) .......... ONLINE','success'],
-    ['SYSTEM','SHRIMP-04 (Thread Writer) .......... ONLINE','success'],
-    ['SYSTEM','SHRIMP-05 (Wallet Roaster) ......... ONLINE','success'],
-    ['SYSTEM','all shrimp deployed. farm is live.','success'],
-    ['SYSTEM','————————————————————————————————————','action'],
-  ];
-  msgs.forEach((m,i)=>{
-    setTimeout(()=>{
-      const div=document.createElement('div');
-      div.className='log-line boot-line';
-      div.style.animationDelay=i*0.08+'s';
-      div.dataset.agent=m[0];
-      const cls=m[2]==='success'?'log-success':'log-action';
-      div.innerHTML=`<span class="log-time">${timestamp()}</span> <span class="log-agent">[${m[0]}]</span> <span class="${cls}">${m[1]}</span>`;
-      term.insertBefore(div,cursorEl);
-      lineCount++;
-      document.getElementById('lineCount').textContent=lineCount+' lines';
-      term.scrollTop=term.scrollHeight;
-    },i*300);
-  });
-})();
+// Info panel
+function showInfo(i){
+  const s=shrimps[i];
+  const state=agentState[i];
+  document.getElementById('infoAvatar').style.background=s.color;
+  document.getElementById('infoName').textContent=s.name;
+  document.getElementById('infoRole').textContent=s.role;
+  document.getElementById('infoLog').innerHTML=state.log.map((l,j)=>
+    `<div class="${j===state.log.length-1?'active-line':''}">${l}</div>`
+  ).join('');
+  document.getElementById('infoPanel').classList.add('open');
+}
 </script>
 </body>
 </html>
