@@ -19,27 +19,57 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:100;
 .top-left{display:flex;gap:16px;align-items:center}
 .top-left span{color:var(--td)}
 .top-left .brand{color:var(--g);font-weight:bold;font-size:13px}
-.top-right{display:flex;gap:12px}
+.top-right{display:flex;gap:12px;align-items:center}
 .top-right a{color:var(--td);text-decoration:none;font-size:10px;letter-spacing:1px;text-transform:uppercase}
 .top-right a:hover{color:var(--g)}
 .top-right .active{color:var(--g)}
 
+/* SOUND TOGGLE */
+.sound-btn{background:none;border:1px solid #1a1a1a;color:var(--td);font-family:var(--mono);font-size:10px;padding:2px 8px;cursor:pointer;letter-spacing:1px;transition:color .2s,border-color .2s}
+.sound-btn:hover{color:var(--g);border-color:var(--g)}
+.sound-btn.unmuted{color:var(--g);border-color:var(--td)}
+
 /* HUD */
 .hud{display:flex;gap:1px;background:#111;border-bottom:1px solid #1a1a1a;flex-shrink:0}
-.hud-cell{flex:1;padding:12px 16px;background:var(--bg)}
-.hud-val{font-size:20px;font-weight:bold;color:var(--g);font-variant-numeric:tabular-nums}
+.hud-cell{flex:1;padding:12px 16px;background:var(--bg);transition:transform .2s,border-color .2s;border-bottom:2px solid transparent;will-change:transform}
+.hud-cell:hover{transform:translateY(-2px);border-bottom-color:var(--g);box-shadow:0 4px 12px rgba(0,255,136,.08)}
+.hud-val{font-size:20px;font-weight:bold;color:var(--g);font-variant-numeric:tabular-nums;transition:color .15s,text-shadow .15s}
 .hud-lbl{font-size:9px;color:var(--td);letter-spacing:2px;text-transform:uppercase;margin-top:2px}
 .hud-val.red{color:var(--red)}
 .hud-val.amber{color:var(--amber)}
+.hud-val.flash{color:#fff;text-shadow:0 0 12px var(--g)}
+
+/* BOOT ANIMATION — HUD cells */
+.hud-cell{opacity:0;transform:scale(.92);animation:hudIn .5s cubic-bezier(.16,1,.3,1) forwards}
+.hud-cell:nth-child(1){animation-delay:.6s}
+.hud-cell:nth-child(2){animation-delay:.72s}
+.hud-cell:nth-child(3){animation-delay:.84s}
+.hud-cell:nth-child(4){animation-delay:.96s}
+.hud-cell:nth-child(5){animation-delay:1.08s}
+@keyframes hudIn{to{opacity:1;transform:scale(1)}}
 
 /* MAIN AREA */
-.main{display:flex;flex:1;overflow:hidden}
+.main{display:flex;flex:1;overflow:hidden;position:relative}
+
+/* AMBIENT GLOW */
+.ambient-glow{position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse at 50% 50%,rgba(0,255,136,.03) 0%,transparent 60%);
+  animation:ambientPulse 6s ease-in-out infinite;
+}
+@keyframes ambientPulse{0%,100%{opacity:.5}50%{opacity:1}}
 
 /* AGENT PANEL */
-.agents{width:240px;border-right:1px solid #1a1a1a;overflow-y:auto;flex-shrink:0}
+.agents{width:240px;border-right:1px solid #1a1a1a;overflow-y:auto;flex-shrink:0;z-index:1}
 .agents-title{padding:10px 16px;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--td);border-bottom:1px solid #1a1a1a}
-.agent{padding:10px 16px;border-bottom:1px solid #111;cursor:pointer;transition:background .15s}
-.agent:hover{background:#111}
+.agent{padding:10px 16px;border-bottom:1px solid #111;cursor:pointer;transition:background .15s,box-shadow .2s;will-change:transform;
+  opacity:0;transform:translateX(-20px);animation:agentSlideIn .4s cubic-bezier(.16,1,.3,1) forwards}
+.agent:nth-child(2){animation-delay:1.2s}
+.agent:nth-child(3){animation-delay:1.32s}
+.agent:nth-child(4){animation-delay:1.44s}
+.agent:nth-child(5){animation-delay:1.56s}
+.agent:nth-child(6){animation-delay:1.68s}
+@keyframes agentSlideIn{to{opacity:1;transform:translateX(0)}}
+.agent:hover{background:#111;box-shadow:0 0 12px rgba(0,255,136,.08) inset,0 0 8px rgba(0,255,136,.05)}
 .agent.selected{background:#0a1a10;border-left:2px solid var(--g)}
 .agent-name{font-size:12px;color:var(--g);margin-bottom:2px}
 .agent-role{font-size:10px;color:var(--td)}
@@ -47,25 +77,35 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:100;
 .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 .dot.active{background:var(--g);box-shadow:0 0 6px var(--g);animation:blink 2s ease-in-out infinite}
 .dot.idle{background:#333}
+.agent.selected .dot.active{animation:blinkFast 1s ease-in-out infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes blinkFast{0%,100%{opacity:1}50%{opacity:.2}}
 .agent-status span{color:var(--td)}
 
 /* TERMINAL */
-.terminal{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.terminal{flex:1;display:flex;flex-direction:column;overflow:hidden;z-index:1}
 .term-header{padding:8px 16px;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--td);border-bottom:1px solid #1a1a1a;display:flex;justify-content:space-between}
 .term-body{flex:1;overflow-y:auto;padding:12px 16px;font-size:12px;line-height:1.8}
 .term-body::-webkit-scrollbar{width:4px}
 .term-body::-webkit-scrollbar-thumb{background:#1a1a1a}
-.log-line{opacity:0;animation:fadeIn .3s forwards}
+.log-line{opacity:0;animation:fadeIn .3s forwards;will-change:opacity}
 @keyframes fadeIn{to{opacity:1}}
 .log-time{color:#333}
-.log-agent{color:var(--amber);font-weight:bold}
+.log-agent{color:var(--amber);font-weight:bold;text-shadow:0 0 8px rgba(255,170,0,.4)}
 .log-action{color:var(--g)}
 .log-data{color:var(--td)}
 .log-error{color:var(--red)}
-.log-success{color:var(--g);font-weight:bold}
-.cursor-blink{display:inline-block;width:8px;height:14px;background:var(--g);animation:cursorBlink .8s step-end infinite;vertical-align:middle;margin-left:4px}
+.log-success{color:var(--g);font-weight:bold;text-shadow:0 0 8px rgba(0,255,136,.5)}
+.log-line.filtered-out{display:none}
+
+/* TERMINAL CURSOR */
+.term-cursor{display:block;margin-top:4px;height:16px}
+.term-cursor-block{display:inline-block;width:8px;height:14px;background:var(--g);animation:cursorBlink .8s step-end infinite;vertical-align:middle;box-shadow:0 0 6px rgba(0,255,136,.5)}
 @keyframes cursorBlink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* BOOT SEQUENCE STAGGER */
+.boot-line{opacity:0;animation:bootFade .4s ease forwards}
+@keyframes bootFade{to{opacity:1}}
 
 /* BOTTOM BAR */
 .bottom{display:flex;justify-content:space-between;align-items:center;padding:6px 16px;border-top:1px solid #1a1a1a;font-size:10px;color:var(--td);flex-shrink:0}
@@ -75,8 +115,16 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:100;
 /* MOBILE */
 @media(max-width:768px){
   .agents{display:none}
-  .hud-cell{padding:8px 10px}
+  .hud{flex-wrap:wrap}
+  .hud-cell{flex:1 1 48%;min-width:0}
+  .hud-cell:last-child{flex:1 1 100%}
   .hud-val{font-size:16px}
+  .hud-cell{padding:8px 10px}
+}
+
+/* REDUCED MOTION */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:0.01ms!important;transition-duration:0.01ms!important}
 }
 </style>
 </head>
@@ -89,6 +137,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:100;
     <span>THE FARM</span>
   </div>
   <div class="top-right">
+    <button class="sound-btn" id="soundToggle" title="Toggle sound">♪ MUTE</button>
     <a href="index.html" class="active">FARM</a>
     <a href="feed.html">FEED</a>
     <a href="#">JUPITER</a>
@@ -108,6 +157,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:100;
 
 <!-- MAIN -->
 <div class="main">
+  <div class="ambient-glow"></div>
   <!-- AGENT LIST -->
   <div class="agents">
     <div class="agents-title">Shrimp Fleet</div>
@@ -141,10 +191,12 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:100;
   <!-- TERMINAL -->
   <div class="terminal">
     <div class="term-header">
-      <span>Live Activity Feed — All Shrimp</span>
+      <span id="termTitle">Live Activity Feed — All Shrimp</span>
       <span id="lineCount">0 lines</span>
     </div>
-    <div class="term-body" id="term"></div>
+    <div class="term-body" id="term">
+      <div class="term-cursor"><span class="term-cursor-block"></span></div>
+    </div>
   </div>
 </div>
 
@@ -219,57 +271,116 @@ const agents=[
 ];
 
 const term=document.getElementById('term');
+const cursorEl=term.querySelector('.term-cursor');
 let taskCount=0;
 let lineCount=0;
 let startTime=Date.now();
+let activeFilter=null; // null = all agents
+
+// --- SOUND SYSTEM (Web Audio API) ---
+let audioCtx=null;
+let soundEnabled=false;
+const soundBtn=document.getElementById('soundToggle');
+
+soundBtn.addEventListener('click',()=>{
+  soundEnabled=!soundEnabled;
+  if(soundEnabled&&!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  soundBtn.textContent=soundEnabled?'♪ ON':'♪ MUTE';
+  soundBtn.classList.toggle('unmuted',soundEnabled);
+});
+
+function playTick(){
+  if(!soundEnabled||!audioCtx)return;
+  const o=audioCtx.createOscillator();
+  const g=audioCtx.createGain();
+  o.type='sine';
+  o.frequency.value=1200;
+  g.gain.value=0.04;
+  g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.06);
+  o.connect(g).connect(audioCtx.destination);
+  o.start();
+  o.stop(audioCtx.currentTime+0.06);
+}
+
+// --- AGENT FILTERING ---
+document.querySelectorAll('.agent').forEach(el=>{
+  el.addEventListener('click',()=>{
+    const name=agents[parseInt(el.dataset.id)].name;
+    const wasSelected=el.classList.contains('selected')&&activeFilter===name;
+    document.querySelectorAll('.agent').forEach(a=>a.classList.remove('selected'));
+    if(wasSelected){
+      activeFilter=null;
+      document.getElementById('termTitle').textContent='Live Activity Feed — All Shrimp';
+    }else{
+      el.classList.add('selected');
+      activeFilter=name;
+      document.getElementById('termTitle').textContent='Live Activity Feed — '+name;
+    }
+    applyFilter();
+  });
+});
+
+function applyFilter(){
+  term.querySelectorAll('.log-line').forEach(line=>{
+    if(!activeFilter){line.classList.remove('filtered-out');return}
+    const agentSpan=line.querySelector('.log-agent');
+    const match=agentSpan&&agentSpan.textContent.includes(activeFilter);
+    line.classList.toggle('filtered-out',!match);
+  });
+}
+
+// --- TASK COUNT FLASH ---
+function flashTaskCount(){
+  const el=document.getElementById('taskCount');
+  el.classList.add('flash');
+  setTimeout(()=>el.classList.remove('flash'),300);
+}
 
 function timestamp(){
   const d=new Date();
   return d.toTimeString().slice(0,8);
 }
 
-function addLine(agent,text,type='action'){
+function addLine(agent,text,type='action',isBoot=false){
   const div=document.createElement('div');
-  div.className='log-line';
+  div.className=isBoot?'log-line boot-line':'log-line';
+  div.dataset.agent=agent;
   const cls=type==='error'?'log-error':type==='success'?'log-success':'log-action';
   div.innerHTML=`<span class="log-time">${timestamp()}</span> <span class="log-agent">[${agent}]</span> <span class="${cls}">${text}</span>`;
-  term.appendChild(div);
+  if(activeFilter&&!agent.includes(activeFilter))div.classList.add('filtered-out');
+  term.insertBefore(div,cursorEl);
   lineCount++;
   document.getElementById('lineCount').textContent=lineCount+' lines';
-  // keep scrolled to bottom
   term.scrollTop=term.scrollHeight;
-  // remove old lines to prevent memory issues
-  if(term.children.length>200)term.removeChild(term.firstChild);
+  // limit to 200 lines
+  const lines=term.querySelectorAll('.log-line');
+  if(lines.length>200)lines[0].remove();
+  playTick();
 }
 
 // simulate agent activity
 const agentState=agents.map(()=>({idx:0}));
 
 function tick(){
-  // pick a random agent
   const i=Math.floor(Math.random()*agents.length);
   const a=agents[i];
   const s=agentState[i];
   const text=a.actions[s.idx%a.actions.length];
-  
-  // occasionally mark as success
   const isLast=(s.idx%a.actions.length)===a.actions.length-1;
   addLine(a.name,text,isLast?'success':'action');
-  
   if(isLast){
     taskCount++;
     document.getElementById('taskCount').textContent=taskCount;
-    // decrement credits
+    flashTaskCount();
     const el=document.getElementById('credits');
     const c=parseInt(el.textContent.replace(/,/g,''))-Math.floor(Math.random()*50+10);
     el.textContent=c.toLocaleString();
   }
-  
   s.idx++;
 }
 
 // stagger initial burst
-for(let i=0;i<8;i++)setTimeout(()=>tick(),i*400);
+for(let i=0;i<8;i++)setTimeout(()=>tick(),3200+i*400);
 
 // then continuous
 setInterval(tick,2000+Math.random()*2000);
@@ -283,7 +394,7 @@ setInterval(()=>{
   document.getElementById('uptime').textContent=`${h}:${m}:${sec}`;
 },1000);
 
-// boot sequence
+// boot sequence with staggered delays
 (function boot(){
   const msgs=[
     ['SYSTEM','initializing shrimp farm v0.1.0...','action'],
@@ -297,7 +408,20 @@ setInterval(()=>{
     ['SYSTEM','all shrimp deployed. farm is live.','success'],
     ['SYSTEM','————————————————————————————————————','action'],
   ];
-  msgs.forEach((m,i)=>setTimeout(()=>addLine(m[0],m[1],m[2]),i*300));
+  msgs.forEach((m,i)=>{
+    setTimeout(()=>{
+      const div=document.createElement('div');
+      div.className='log-line boot-line';
+      div.style.animationDelay=i*0.08+'s';
+      div.dataset.agent=m[0];
+      const cls=m[2]==='success'?'log-success':'log-action';
+      div.innerHTML=`<span class="log-time">${timestamp()}</span> <span class="log-agent">[${m[0]}]</span> <span class="${cls}">${m[1]}</span>`;
+      term.insertBefore(div,cursorEl);
+      lineCount++;
+      document.getElementById('lineCount').textContent=lineCount+' lines';
+      term.scrollTop=term.scrollHeight;
+    },i*300);
+  });
 })();
 </script>
 </body>
